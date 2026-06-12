@@ -1,0 +1,41 @@
+{
+  "banks": [
+    {
+      "bankId": "wells_fargo",
+      "displayName": "Wells Fargo",
+      "numbers": [
+        "+18008693557",
+        "+18006424720",
+        "+18668675568",
+        "+18002255935",
+        "+18007424932",
+        "+18009564442",
+        "+18005489554"
+      ],
+      "aliases": [
+        "wells fargo",
+        "wellsfargo",
+        "wf"
+      ]
+    },
+    {
+      "bankId": "bank_of_america",
+      "displayName": "Bank of America",
+      "numbers": [
+        "+18004321000",
+        "+18773661121",
+        "+18007329194",
+        "+18006696607",
+        "+18009345626",
+        "+18006886086",
+        "+18004212110"
+      ],
+      "aliases": [
+        "bank of america",
+        "bofa",
+        "boa",
+        "bankofamerica"
+      ]
+    }
+  ]
+}

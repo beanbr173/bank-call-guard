@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bank Call Guard — Browser Preview</title>
+  <style>
+    :root {
+      --brand-primary: #1b365d;
+      --surface: #f5f7fa;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #5f6368;
+      --overlay-bg: #101820;
+      --panel: #1a2430;
+      --risk-high: #d32f2f;
+      --risk-caution: #f57c00;
+      --risk-safe: #2e7d32;
+      --border: #e0e4ea;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, #dfe8f3 0%, #eef2f7 45%, #f8fafc 100%);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    .page-header {
+      width: min(960px, 100%);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .page-header h1 {
+      margin: 0 0 8px;
+      font-size: 1.6rem;
+      color: var(--brand-primary);
+    }
+
+    .page-header p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.5;
+      max-width: 640px;
+      margin-inline: auto;
+    }
+
+    .preview-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #fff3cd;
+      color: #856404;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .phone-shell {
+      width: min(390px, 100%);
+      min-height: 780px;
+      background: #111;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 24px;
+      background: #111;
+      border-radius: 0 0 16px 16px;
+      margin: 0 auto 8px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .phone-screen {
+      background: var(--surface);
+      border-radius: 28px;
+      overflow: hidden;
+      min-height: 720px;
+      position: relative;
+    }
+
+    .screen {
+      min-height: 720px;
+      padding: 20px 18px 28px;
+      overflow-y: auto;
+    }
+
+    .screen-main {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .app-title {
+      margin: 0;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--brand-primary);
+    }
+
+    .disclaimer {
+      margin: 0;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .card p {
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: var(--text-muted);
+    }
+
+    .status-ok {
+      color: var(--risk-safe);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .status-bad {
+      color: var(--risk-high);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .row label {
+      flex: 1;
+      font-size: 0.95rem;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      transition: transform 0.08s ease, opacity 0.15s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--brand-primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-outline {
+      width: 100%;
+      background: transparent;
+      color: var(--brand-primary);
+      border: 1.5px solid var(--brand-primary);
+      font-weight: 600;
+    }
+
+    .btn-accent {
+      width: 100%;
+      color: #fff;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-outline-light {
+      width: 100%;
+      background: transparent;
+      color: #fff;
+      border: 1.5px solid rgba(255, 255, 255, 0.55);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cfd8dc;
+      border-radius: 999px;
+      transition: 0.2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch input:checked + .slider {
+      background: var(--brand-primary);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--brand-primary);
+    }
+
+    .footer-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--overlay-bg);
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px 20px;
+      z-index: 10;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .overlay.visible {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .warning-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+    }
+
+    .overlay-title {
+      margin: 0;
+      font-size: 1.65rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .overlay-bank {
+      margin: 8px 0 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .overlay-panel {
+      margin-top: 24px;
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .overlay-panel p {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .overlay-panel .muted {
+      color: #b0bec5;
+      font-size: 0.88rem;
+    }
+
+    .overlay-actions {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #323232;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 100;
+    }
+
+    .overlay-note {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffcc80;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .overlay-note.hidden {
+      display: none;
+    }
+
+    .toggle-hint {
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #fff3cd;
+      color: #856404;
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .toggle-hint.hidden {
+      display: none;
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 12px 8px 24px;
+      }
+
+      .phone-shell {
+        border-radius: 24px;
+        padding: 8px;
+      }
+
+      .phone-screen,
+      .screen {
+        min-height: calc(100vh - 80px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Bank Call Guard — Browser Preview</h1>
+    <p>
+      Interactive mockup of the Android app. Use the simulate buttons to preview incoming-call warnings.
+      This page does not screen real phone calls.
+    </p>
+    <span class="preview-badge">Preview only — open this file in any browser</span>
+  </header>
+
+  <div class="phone-shell" aria-label="Phone preview frame">
+    <div class="phone-notch" aria-hidden="true"></div>
+    <div class="phone-screen">
+      <main id="main-screen" class="screen screen-main">
+        <h1 class="app-title">Bank Call Guard</h1>
+        <p class="disclaimer">
+          This app is not affiliated with any financial institution. It analyzes incoming call metadata only.
+          False positives and false negatives are possible.
+        </p>
+
+        <section class="card">
+          <h2>Enable call screening</h2>
+          <p>Bank Call Guard must be set as your call screening app to analyze incoming calls before they ring.</p>
+          <p id="screening-status" class="status-bad">Call screening is not enabled</p>
+          <button id="enable-screening-btn" class="btn-primary" type="button">Enable call screening</button>
+        </section>
+
+        <section class="card">
+          <div class="row">
+            <label for="alerts-enabled">Bank impersonation alerts</label>
+            <label class="switch">
+              <input id="alerts-enabled" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="row">
+            <label for="auto-silence">Auto-silence high-risk calls</label>
+            <label class="switch">
+              <input id="auto-silence" type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="row">
+            <label for="use-alarm">Use alarm ringtone for scam warnings</label>
+            <label class="switch">
+              <input id="use-alarm" type="checkbox" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <p class="footer-note" style="margin-top: 4px">
+            Replaces the normal ring with a loud alarm for high-risk scam calls.
+          </p>
+        </section>
+
+        <section class="card">
+          <h2>Monitored banks</h2>
+          <div class="row">
+            <label for="bank-wells">Wells Fargo</label>
+            <input id="bank-wells" class="checkbox" type="checkbox" data-bank-id="wells_fargo" checked />
+          </div>
+          <div class="row">
+            <label for="bank-bofa">Bank of America</label>
+            <input id="bank-bofa" class="checkbox" type="checkbox" data-bank-id="bank_of_america" checked />
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Battery optimization</h2>
+          <p>Some phones may delay call screening if battery optimization is enabled for this app.</p>
+          <button id="battery-btn" class="btn-outline" type="button">Request battery exemption</button>
+        </section>
+
+        <section class="card">
+          <p id="alerts-hint" class="toggle-hint hidden">
+            Alerts are off — simulations still preview the warning here. Turn on
+            <strong>Bank impersonation alerts</strong> above to match real app behavior.
+          </p>
+          <button id="simulate-scam-btn" class="btn-primary" type="button">Simulate scam call warning</button>
+          <div style="height: 8px"></div>
+          <button id="simulate-caution-btn" class="btn-outline" type="button">Simulate caution warning</button>
+          <div style="height: 8px"></div>
+          <button id="simulate-alias-btn" class="btn-outline" type="button">Simulate fake caller ID name</button>
+        </section>
+
+        <p class="footer-note">If unsure, hang up and call the number on the back of your card.</p>
+      </main>
+
+      <section id="overlay" class="overlay" aria-live="assertive" aria-hidden="true">
+        <p id="overlay-preview-note" class="overlay-note hidden">
+          Preview only: alerts are disabled — on a real phone this warning would not appear.
+        </p>
+        <svg class="warning-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path id="warning-path" d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="#d32f2f"/>
+        </svg>
+        <h2 id="overlay-title" class="overlay-title">Scam posing as Wells Fargo</h2>
+        <p id="overlay-bank" class="overlay-bank">Wells Fargo</p>
+
+        <div class="overlay-panel">
+          <p id="overlay-caller-id">Caller ID: Wells Fargo</p>
+          <p id="overlay-number">Number: +18008693557</p>
+          <p class="muted">If unsure, hang up and call the number on the back of your card.</p>
+        </div>
+
+        <div class="overlay-actions">
+          <button id="answer-btn" class="btn-accent" type="button" style="background: var(--risk-high)">
+            <span aria-hidden="true">📞</span> Answer anyway
+          </button>
+          <button id="dismiss-btn" class="btn-outline-light" type="button">
+            <span aria-hidden="true">✕</span> Dismiss warning
+          </button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    const BANKS = {
+      wells_fargo: {
+        bankId: "wells_fargo",
+        displayName: "Wells Fargo",
+        numbers: ["+18008693557"],
+        aliases: ["wells fargo", "wellsfargo", "wf"]
+      },
+      bank_of_america: {
+        bankId: "bank_of_america",
+        displayName: "Bank of America",
+        numbers: ["+18004321000"],
+        aliases: ["bank of america", "bofa", "boa", "bankofamerica"]
+      }
+    };
+
+    const VERIFICATION = {
+      NOT_VERIFIED: 0,
+      PASSED: 1,
+      FAILED: 2
+    };
+
+    const state = {
+      callScreeningEnabled: false,
+      alertsEnabled: true,
+      autoSilenceHighRisk: false,
+      useScamAlarmRingtone: true,
+      enabledBankIds: new Set(["wells_fargo", "bank_of_america"])
+    };
+
+    let alarmIntervalId = null;
+    let alarmAudioContext = null;
+
+    function stopAlarmPreview() {
+      if (alarmIntervalId !== null) {
+        window.clearInterval(alarmIntervalId);
+        alarmIntervalId = null;
+      }
+      if (alarmAudioContext) {
+        alarmAudioContext.close().catch(() => {});
+        alarmAudioContext = null;
+      }
+    }
+
+    function playAlarmPreview() {
+      stopAlarmPreview();
+      alarmAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      function beep(frequency, startTime, duration) {
+        const oscillator = alarmAudioContext.createOscillator();
+        const gain = alarmAudioContext.createGain();
+        oscillator.type = "square";
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.22, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        oscillator.connect(gain);
+        gain.connect(alarmAudioContext.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration + 0.02);
+      }
+
+      function cycle() {
+        const now = alarmAudioContext.currentTime;
+        beep(880, now, 0.18);
+        beep(660, now + 0.22, 0.18);
+        beep(880, now + 0.44, 0.18);
+        beep(660, now + 0.66, 0.18);
+      }
+
+      cycle();
+      alarmIntervalId = window.setInterval(cycle, 1200);
+    }
+
+    const overlay = document.getElementById("overlay");
+    const toast = document.getElementById("toast");
+    const screeningStatus = document.getElementById("screening-status");
+    const warningPath = document.getElementById("warning-path");
+    const answerBtn = document.getElementById("answer-btn");
+    const alertsHint = document.getElementById("alerts-hint");
+    const overlayPreviewNote = document.getElementById("overlay-preview-note");
+
+    function syncStateFromDom() {
+      state.alertsEnabled = document.getElementById("alerts-enabled").checked;
+      state.autoSilenceHighRisk = document.getElementById("auto-silence").checked;
+      state.useScamAlarmRingtone = document.getElementById("use-alarm").checked;
+      state.enabledBankIds = new Set(
+        [...document.querySelectorAll("[data-bank-id]")]
+          .filter((input) => input.checked)
+          .map((input) => input.dataset.bankId)
+      );
+      updateAlertsHint();
+    }
+
+    function updateAlertsHint() {
+      alertsHint.classList.toggle("hidden", state.alertsEnabled);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function getEnabledBanks() {
+      return Object.values(BANKS).filter((bank) => state.enabledBankIds.has(bank.bankId));
+    }
+
+    function assess(rawNumber, callerDisplayName, verificationStatus) {
+      const enabledBanks = getEnabledBanks();
+      const matchedBank = enabledBanks.find((bank) => bank.numbers.includes(rawNumber));
+
+      if (matchedBank) {
+        let risk = "CAUTION";
+        let message = `Unverified caller claiming to be ${matchedBank.displayName}`;
+
+        if (verificationStatus === VERIFICATION.FAILED) {
+          risk = "HIGH";
+          message = `Scam posing as ${matchedBank.displayName}`;
+        } else if (verificationStatus === VERIFICATION.PASSED) {
+          risk = "NONE";
+          message = null;
+        }
+
+        return {
+          bankId: matchedBank.bankId,
+          bankName: matchedBank.displayName,
+          risk,
+          userMessage: message,
+          callerNumber: rawNumber,
+          callerDisplayName
+        };
+      }
+
+      const normalizedName = (callerDisplayName || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .trim();
+
+      const aliasMatch = enabledBanks.find((bank) =>
+        bank.aliases.some((alias) => normalizedName.includes(alias) || alias.includes(normalizedName))
+      );
+
+      if (aliasMatch && normalizedName) {
+        return {
+          bankId: aliasMatch.bankId,
+          bankName: aliasMatch.displayName,
+          risk: "HIGH",
+          userMessage: `Possible scam — caller ID says ${aliasMatch.displayName} but number is not official`,
+          callerNumber: rawNumber,
+          callerDisplayName
+        };
+      }
+
+      return {
+        bankId: null,
+        bankName: null,
+        risk: "NONE",
+        userMessage: null,
+        callerNumber: rawNumber,
+        callerDisplayName
+      };
+    }
+
+    function riskColor(risk) {
+      if (risk === "HIGH") return "#d32f2f";
+      if (risk === "CAUTION") return "#f57c00";
+      return "#2e7d32";
+    }
+
+    function showOverlay(assessment, options = {}) {
+      const forcePreview = options.forcePreview === true;
+
+      if (assessment.risk === "NONE") {
+        const reason = state.enabledBankIds.size === 0
+          ? "No banks selected — enable at least one monitored bank."
+          : "No warning for this scenario (verification passed or bank disabled).";
+        showToast(reason);
+        return;
+      }
+
+      if (!state.alertsEnabled && !forcePreview) {
+        showToast("Alerts are disabled — no overlay shown.");
+        return;
+      }
+
+      const accent = riskColor(assessment.risk);
+
+      document.getElementById("overlay-title").textContent = assessment.userMessage;
+      document.getElementById("overlay-bank").textContent = assessment.bankName || "";
+      document.getElementById("overlay-bank").style.color = accent;
+      document.getElementById("overlay-caller-id").textContent =
+        assessment.callerDisplayName ? `Caller ID: ${assessment.callerDisplayName}` : "";
+      document.getElementById("overlay-number").textContent =
+        assessment.callerNumber ? `Number: ${assessment.callerNumber}` : "";
+      warningPath.setAttribute("fill", accent);
+      answerBtn.style.background = accent;
+
+      overlayPreviewNote.classList.toggle("hidden", state.alertsEnabled);
+
+      overlay.classList.add("visible");
+      overlay.setAttribute("aria-hidden", "false");
+
+      if (assessment.risk === "HIGH" && state.useScamAlarmRingtone) {
+        playAlarmPreview();
+      } else {
+        stopAlarmPreview();
+      }
+
+      if (state.autoSilenceHighRisk && assessment.risk === "HIGH") {
+        showToast("High-risk call would be silenced on device.");
+      } else if (!state.alertsEnabled && forcePreview) {
+        showToast("Preview shown — alerts are off on the real app.");
+      } else if (assessment.risk === "HIGH" && state.useScamAlarmRingtone) {
+        showToast("Alarm ringtone playing (simulated).");
+      }
+    }
+
+    function hideOverlay() {
+      stopAlarmPreview();
+      overlay.classList.remove("visible");
+      overlay.setAttribute("aria-hidden", "true");
+    }
+
+    function updateScreeningStatus() {
+      if (state.callScreeningEnabled) {
+        screeningStatus.textContent = "Call screening is enabled";
+        screeningStatus.className = "status-ok";
+      } else {
+        screeningStatus.textContent = "Call screening is not enabled";
+        screeningStatus.className = "status-bad";
+      }
+    }
+
+    document.getElementById("enable-screening-btn").addEventListener("click", () => {
+      state.callScreeningEnabled = !state.callScreeningEnabled;
+      updateScreeningStatus();
+      showToast(
+        state.callScreeningEnabled
+          ? "Call screening enabled (simulated)."
+          : "Call screening disabled (simulated)."
+      );
+    });
+
+    document.getElementById("battery-btn").addEventListener("click", () => {
+      showToast("Battery exemption request (simulated).");
+    });
+
+    document.getElementById("alerts-enabled").addEventListener("change", (event) => {
+      state.alertsEnabled = event.target.checked;
+      updateAlertsHint();
+    });
+
+    document.getElementById("auto-silence").addEventListener("change", (event) => {
+      state.autoSilenceHighRisk = event.target.checked;
+    });
+
+    document.getElementById("use-alarm").addEventListener("change", (event) => {
+      state.useScamAlarmRingtone = event.target.checked;
+      if (!event.target.checked) {
+        stopAlarmPreview();
+      }
+    });
+
+    document.querySelectorAll("[data-bank-id]").forEach((input) => {
+      input.addEventListener("change", (event) => {
+        const bankId = event.target.dataset.bankId;
+        if (event.target.checked) {
+          state.enabledBankIds.add(bankId);
+        } else {
+          state.enabledBankIds.delete(bankId);
+        }
+      });
+    });
+
+    document.getElementById("simulate-scam-btn").addEventListener("click", () => {
+      const assessment = assess(
+        "+18008693557",
+        "Wells Fargo",
+        VERIFICATION.FAILED
+      );
+      showOverlay(assessment, { forcePreview: true });
+    });
+
+    document.getElementById("simulate-caution-btn").addEventListener("click", () => {
+      const assessment = assess(
+        "+18008693557",
+        "Wells Fargo",
+        VERIFICATION.NOT_VERIFIED
+      );
+      showOverlay(assessment, { forcePreview: true });
+    });
+
+    document.getElementById("simulate-alias-btn").addEventListener("click", () => {
+      const assessment = assess(
+        "+15551234567",
+        "Bank of America Fraud Alert",
+        VERIFICATION.NOT_VERIFIED
+      );
+      showOverlay(assessment, { forcePreview: true });
+    });
+
+    document.getElementById("answer-btn").addEventListener("click", () => {
+      hideOverlay();
+      showToast("Call would continue ringing (simulated).");
+    });
+
+    document.getElementById("dismiss-btn").addEventListener("click", () => {
+      hideOverlay();
+      showToast("Warning dismissed.");
+    });
+
+    syncStateFromDom();
+    updateScreeningStatus();
+  </script>
+</body>
+</html>

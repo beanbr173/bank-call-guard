@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_primary">#FF1B365D</color>
+    <color name="surface">#FFF5F7FA</color>
+    <color name="overlay_background">#FF101820</color>
+    <color name="risk_high">#FFD32F2F</color>
+    <color name="risk_caution">#FFF57C00</color>
+    <color name="risk_safe">#FF2E7D32</color>
+    <color name="ic_launcher_background">#FF1B365D</color>
+</resources>
