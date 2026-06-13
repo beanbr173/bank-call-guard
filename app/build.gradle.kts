@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+import java.util.Properties
+
 android {
     namespace = "com.mda.bankcallguard"
     compileSdk = 34
@@ -24,7 +26,7 @@ android {
         create("ciDebug") {
             val propsFile = rootProject.file("signing/ci-debug.properties")
             if (propsFile.exists()) {
-                val props = java.util.Properties().apply { propsFile.inputStream().use(::load) }
+                val props = Properties().apply { propsFile.inputStream().use { load(it) } }
                 storeFile = rootProject.file("signing/${props.getProperty("storeFile")}")
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")
