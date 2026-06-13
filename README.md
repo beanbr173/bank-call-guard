@@ -28,7 +28,7 @@ This repo includes a GitHub Actions workflow that builds the APK in the cloud.
 
    **Alternative:** if you have Git installed locally:
    ```bat
-   cd d:\MDA\bank_call_guard
+   cd D:\working\play_store_apps\bank_call_guard
    git init
    git add .
    git commit -m "Initial Bank Call Guard release"
@@ -112,7 +112,7 @@ Use this only if you install Android Studio or JDK + Android SDK on your machine
 ### Option B: Gradle CLI
 
 ```bat
-cd d:\MDA\bank_call_guard
+cd D:\working\play_store_apps\bank_call_guard
 gradlew.bat assembleDebug
 ```
 

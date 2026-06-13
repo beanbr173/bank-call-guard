@@ -1,0 +1,68 @@
+---
+description: When the user says "create app", scaffold an Android app with GitHub CI and a stable APK download link
+alwaysApply: true
+---
+
+# Create app (Android + GitHub pipeline)
+
+When the user says **"create app"** (or clearly equivalent: "build me an app", "new Android app", "scaffold mobile app"), treat it as a full greenfield setup — not just source files.
+
+## First step — ask for folder (required)
+
+**Before creating files or a repo**, ask where the project should live:
+
+- If the user did **not** include a parent folder path in the same message, **ask** (use AskQuestion or a direct question). Do **not** silently pick a path.
+- Offer a sensible default in the prompt only (e.g. `D:\working\play_store_apps\` on this machine) — user must confirm or provide another path.
+- Final project root: **`<chosen-parent-folder>\<slug>\`** (create the slug subfolder unless the user wants the slug to be the folder itself).
+
+Do not proceed with scaffolding until the folder is confirmed.
+
+## Naming (infer from the request)
+
+- **Display name:** human-readable from the idea (e.g. `Bank Call Guard`).
+- **Folder / repo / package slug:** lowercase kebab-case (e.g. `bank-call-guard`).
+- **GitHub repo:** `https://github.com/beanbr173/<slug>` unless the user names another org/user.
+- **Release APK filename:** `<slug>.apk` (fixed name — never change between builds).
+- **Permanent download URL** (give the user once; same link forever):
+
+  `https://github.com/beanbr173/<slug>/releases/latest/download/<slug>.apk`
+
+## Default stack
+
+- Kotlin Android app, **minSdk 29**, **targetSdk 34**, JDK **17**, Gradle **8.7** wrapper.
+- Jetpack Compose for UI unless the request clearly fits another pattern.
+- Add **`preview/index.html`** when UI preview without a build would help.
+
+## GitHub Actions pipeline (required)
+
+Add `.github/workflows/build-apk.yml` modeled on **Bank Call Guard** (`D:\working\play_store_apps\bank_call_guard`):
+
+1. Triggers: `push` to `main`/`master`, `pull_request`, `workflow_dispatch`.
+2. `permissions: contents: write`.
+3. Steps: checkout → JDK 17 → `android-actions/setup-android@v3` → install `platforms;android-34` + `build-tools;34.0.0` → `./gradlew assembleDebug`.
+4. Upload Actions artifact `{slug}-debug-apk` (retention 30 days).
+5. On non-PR runs: read `versionName` from `app/build.gradle.kts`, tag `v{versionName}-{run_number}`, copy APK to `<slug>.apk`, publish with `softprops/action-gh-release@v2`, `make_latest: true`.
+6. Release body must include the permanent download URL above.
+
+Do **not** run unit tests in CI unless the user asks — keep builds fast and reliable.
+
+## GitHub + delivery (required)
+
+- `git init`, commit, create **public** repo (free Actions), push `main`.
+- Use **`gh`** CLI (`C:\Program Files\GitHub CLI\gh.exe`) — user is logged in as **beanbr173**; push and watch CI without asking them to use GitHub Desktop.
+- After push: `gh run watch` until green; confirm release asset exists; give the user the permanent link.
+
+## README (required)
+
+Document: cloud build steps, **permanent download link**, sideload install, Call Screening / permissions if relevant, and optional `preview/index.html`.
+
+## User preferences (carry forward)
+
+- No Android Studio required on their PC — cloud build + sideload is the default workflow.
+- Fix CI failures and push follow-up commits until the pipeline is green.
+- Bump `versionName` / `versionCode` in `app/build.gradle.kts` when shipping meaningful updates.
+
+## Out of scope unless asked
+
+- Play Store signing / `assembleRelease`.
+- iOS or non-Android platforms (say so and offer Android-only pipeline).
