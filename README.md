@@ -187,3 +187,9 @@ Edit `app/src/main/assets/banks.json` and rebuild. Each bank entry includes:
 ## Version
 
 1.0.3
+
+## Play Store track
+
+Google Play prep (privacy policy, signed AAB, store checklist) lives in a separate repo so sideload builds are unchanged:
+
+**https://github.com/beanbr173/bank-call-guard-play**
