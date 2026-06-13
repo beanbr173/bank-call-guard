@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import com.mda.bankcallguard.BuildConfig
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -72,6 +71,9 @@ private fun MainScreen() {
     )
 
     var callScreeningEnabled by remember { mutableStateOf(isCallScreeningRoleHeld(context)) }
+    val appVersionName = remember {
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "?"
+    }
 
     val roleLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -236,7 +238,7 @@ private fun MainScreen() {
             style = MaterialTheme.typography.bodySmall
         )
         Text(
-            text = stringResource(R.string.app_version, BuildConfig.VERSION_NAME),
+            text = stringResource(R.string.app_version, appVersionName),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
