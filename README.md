@@ -177,4 +177,4 @@ Edit `app/src/main/assets/banks.json` and rebuild. Each bank entry includes:
 
 ## Version
 
-1.0.1
+1.0.2
