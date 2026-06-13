@@ -44,6 +44,14 @@ This repo includes a GitHub Actions workflow that builds the APK in the cloud.
    - Wait about **8–15 minutes** for the green checkmark
 
 5. **Download the APK**
+
+   **Share with friends (one link, always latest build):**
+
+   https://github.com/beanbr173/bank-call-guard/releases/latest/download/bank-call-guard.apk
+
+   Each successful push to `main` publishes a new release; that URL always downloads the newest APK.
+
+   **For yourself (specific build from Actions):**
    - Open the completed workflow run
    - Scroll to **Artifacts**
    - Download **bank-call-guard-debug-apk**
@@ -57,7 +65,7 @@ This repo includes a GitHub Actions workflow that builds the APK in the cloud.
 
 7. **After you change the app**
    - Edit files locally (or on GitHub’s website)
-   - Upload/commit again → Actions rebuilds → download new APK → reinstall on phone
+   - Upload/commit again → Actions rebuilds → the [latest release link](https://github.com/beanbr173/bank-call-guard/releases/latest/download/bank-call-guard.apk) serves the new APK → reinstall on phone
    - UI-only tweaks can be checked first in `preview/index.html` (instant, no rebuild)
 
 ### Manual build trigger
