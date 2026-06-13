@@ -11,8 +11,8 @@ android {
         applicationId = "com.mda.bankcallguard"
         minSdk = 29
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -20,7 +20,26 @@ android {
         }
     }
 
+    signingConfigs {
+        create("ciDebug") {
+            val propsFile = rootProject.file("signing/ci-debug.properties")
+            if (propsFile.exists()) {
+                val props = java.util.Properties().apply { propsFile.inputStream().use(::load) }
+                storeFile = rootProject.file("signing/${props.getProperty("storeFile")}")
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            val ciProps = rootProject.file("signing/ci-debug.properties")
+            if (ciProps.exists()) {
+                signingConfig = signingConfigs.getByName("ciDebug")
+            }
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

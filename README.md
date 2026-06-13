@@ -132,6 +132,15 @@ gradlew.bat assembleRelease
 6. Optionally request battery optimization exemption on aggressive OEM skins
 7. Use **Simulate scam call warning** to preview the overlay without a real call
 
+### If install says "App not installed"
+
+1. Delete old `bank-call-guard*.apk` files from Downloads — download **one** fresh copy from the [latest release link](https://github.com/beanbr173/bank-call-guard/releases/latest/download/bank-call-guard.apk).
+2. **Settings → Apps → search "Bank Call Guard"** — if it appears, tap **Uninstall** (even if you think it is not installed).
+3. **Google Play Protect:** when installing, if you see a scan warning, tap **Install anyway** / **More details → Install anyway**.
+4. **Install unknown apps:** **Settings → Apps → [My Files or Chrome]** → allow installs from that app.
+5. Confirm **Android 10+** (required — minSdk 29).
+6. After install, scroll to the bottom of the app — you should see **Version 1.0.3** or newer.
+
 ## How detection works
 
 | Condition | Risk | Message |
@@ -177,4 +186,4 @@ Edit `app/src/main/assets/banks.json` and rebuild. Each bank entry includes:
 
 ## Version
 
-1.0.2
+1.0.3
