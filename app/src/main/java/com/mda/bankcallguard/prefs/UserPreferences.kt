@@ -78,6 +78,6 @@ class UserPreferences(private val context: Context) {
         private val KEY_USE_SCAM_ALARM_RINGTONE = booleanPreferencesKey("use_scam_alarm_ringtone")
         private val KEY_ENABLED_BANK_IDS = stringSetPreferencesKey("enabled_bank_ids")
 
-        val DEFAULT_BANK_IDS = setOf("wells_fargo", "bank_of_america")
+        val DEFAULT_BANK_IDS = setOf("wells_fargo", "bank_of_america", "first_citizens")
     }
 }

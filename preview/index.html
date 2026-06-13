@@ -469,6 +469,10 @@
             <label for="bank-bofa">Bank of America</label>
             <input id="bank-bofa" class="checkbox" type="checkbox" data-bank-id="bank_of_america" checked />
           </div>
+          <div class="row">
+            <label for="bank-fcb">First Citizens Bank</label>
+            <input id="bank-fcb" class="checkbox" type="checkbox" data-bank-id="first_citizens" checked />
+          </div>
         </section>
 
         <section class="card">
@@ -535,6 +539,12 @@
         displayName: "Bank of America",
         numbers: ["+18004321000"],
         aliases: ["bank of america", "bofa", "boa", "bankofamerica"]
+      },
+      first_citizens: {
+        bankId: "first_citizens",
+        displayName: "First Citizens Bank",
+        numbers: ["+18883234732", "+18665677760"],
+        aliases: ["first citizens", "first citizens bank", "firstcitizens", "fc direct", "fcdirect"]
       }
     };
 
@@ -549,7 +559,7 @@
       alertsEnabled: true,
       autoSilenceHighRisk: false,
       useScamAlarmRingtone: true,
-      enabledBankIds: new Set(["wells_fargo", "bank_of_america"])
+      enabledBankIds: new Set(["wells_fargo", "bank_of_america", "first_citizens"])
     };
 
     let alarmIntervalId = null;

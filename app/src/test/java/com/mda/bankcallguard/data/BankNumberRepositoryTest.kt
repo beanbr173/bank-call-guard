@@ -16,11 +16,12 @@ class BankNumberRepositoryTest {
     private val repository = BankNumberRepository(context)
 
     @Test
-    fun loadsWellsFargoAndBankOfAmerica() {
+    fun loadsConfiguredBanks() {
         val banks = repository.getAllBanks()
-        assertEquals(2, banks.size)
+        assertEquals(3, banks.size)
         assertNotNull(banks.firstOrNull { it.bankId == "wells_fargo" })
         assertNotNull(banks.firstOrNull { it.bankId == "bank_of_america" })
+        assertNotNull(banks.firstOrNull { it.bankId == "first_citizens" })
     }
 
     @Test
@@ -35,5 +36,15 @@ class BankNumberRepositoryTest {
         val banks = repository.getAllBanks()
         val bank = repository.findBankByAlias("BOFA Fraud Alert", banks)
         assertEquals("bank_of_america", bank?.bankId)
+    }
+
+    @Test
+    fun findsFirstCitizensByNumberAndAlias() {
+        val banks = repository.getAllBanks()
+        val byNumber = repository.findBankByNumber("+18665677760", banks)
+        assertEquals("first_citizens", byNumber?.bankId)
+
+        val byAlias = repository.findBankByAlias("First Citizens Fraud Alert", banks)
+        assertEquals("first_citizens", byAlias?.bankId)
     }
 }

@@ -36,6 +36,23 @@
         "boa",
         "bankofamerica"
       ]
+    },
+    {
+      "bankId": "first_citizens",
+      "displayName": "First Citizens Bank",
+      "numbers": [
+        "+18883234732",
+        "+18665677760",
+        "+18663224249",
+        "+18005439000"
+      ],
+      "aliases": [
+        "first citizens",
+        "first citizens bank",
+        "firstcitizens",
+        "fc direct",
+        "fcdirect"
+      ]
     }
   ]
 }
