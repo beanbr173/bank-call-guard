@@ -158,7 +158,7 @@ bank_call_guard/
 ├── .github/workflows/build-apk.yml
 ├── preview/index.html
 ├── app/src/main/assets/banks.json
-├── app/src/main/java/com/bankcallguard/
+├── app/src/main/java/com/kreativesolutions/bankcallguard/
 │   ├── BankCallScreeningService.kt
 │   ├── IncomingCallOverlayActivity.kt
 │   ├── MainActivity.kt

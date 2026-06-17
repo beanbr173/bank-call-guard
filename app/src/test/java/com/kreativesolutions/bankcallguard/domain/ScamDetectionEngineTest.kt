@@ -1,7 +1,7 @@
-package com.bankcallguard.domain
+package com.kreativesolutions.bankcallguard.domain
 
-import com.bankcallguard.data.BankEntry
-import com.bankcallguard.data.BankLookup
+import com.kreativesolutions.bankcallguard.data.BankEntry
+import com.kreativesolutions.bankcallguard.data.BankLookup
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before

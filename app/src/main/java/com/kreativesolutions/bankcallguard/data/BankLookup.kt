@@ -1,4 +1,4 @@
-package com.bankcallguard.data
+package com.kreativesolutions.bankcallguard.data
 
 interface BankLookup {
     fun getEnabledBanks(enabledBankIds: Set<String>): List<BankEntry>

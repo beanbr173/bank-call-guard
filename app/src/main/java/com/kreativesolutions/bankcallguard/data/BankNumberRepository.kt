@@ -1,4 +1,4 @@
-package com.bankcallguard.data
+package com.kreativesolutions.bankcallguard.data
 
 import android.content.Context
 import org.json.JSONObject

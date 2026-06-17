@@ -1,4 +1,4 @@
-package com.bankcallguard.domain
+package com.kreativesolutions.bankcallguard.domain
 
 enum class Risk {
     NONE,
