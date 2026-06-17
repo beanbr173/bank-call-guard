@@ -1,10 +1,10 @@
-package com.mda.bankcallguard.alert
+package com.bankcallguard.alert
 
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.util.Log
-import com.mda.bankcallguard.R
+import com.bankcallguard.R
 
 object ScamAlertSoundPlayer {
     private var mediaPlayer: MediaPlayer? = null

@@ -6,11 +6,11 @@ plugins {
 import java.util.Properties
 
 android {
-    namespace = "com.mda.bankcallguard"
+    namespace = "com.bankcallguard"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.mda.bankcallguard"
+        applicationId = "com.bankcallguard"
         minSdk = 29
         targetSdk = 34
         versionCode = 4

@@ -1,9 +1,9 @@
-package com.mda.bankcallguard
+package com.bankcallguard
 
 import android.content.Context
 import android.content.Intent
-import com.mda.bankcallguard.domain.Assessment
-import com.mda.bankcallguard.domain.Risk
+import com.bankcallguard.domain.Assessment
+import com.bankcallguard.domain.Risk
 
 object OverlayLauncher {
     const val EXTRA_BANK_NAME = "extra_bank_name"

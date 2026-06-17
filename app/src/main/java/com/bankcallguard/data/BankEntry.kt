@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.data
+package com.bankcallguard.data
 
 data class BankEntry(
     val bankId: String,

@@ -1,4 +1,4 @@
-package com.mda.bankcallguard
+package com.bankcallguard
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,9 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mda.bankcallguard.alert.ScamAlertSoundPlayer
-import com.mda.bankcallguard.domain.Risk
-import com.mda.bankcallguard.ui.theme.BankCallGuardTheme
+import com.bankcallguard.alert.ScamAlertSoundPlayer
+import com.bankcallguard.domain.Risk
+import com.bankcallguard.ui.theme.BankCallGuardTheme
 
 class IncomingCallOverlayActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

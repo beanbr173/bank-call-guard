@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.prefs
+package com.bankcallguard.prefs
 
 import android.content.Context
 import androidx.datastore.core.DataStore

@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.data
+package com.bankcallguard.data
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull

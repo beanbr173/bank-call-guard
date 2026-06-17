@@ -1,9 +1,9 @@
-package com.mda.bankcallguard
+package com.bankcallguard
 
 import android.app.Application
-import com.mda.bankcallguard.data.BankNumberRepository
-import com.mda.bankcallguard.domain.ScamDetectionEngine
-import com.mda.bankcallguard.prefs.UserPreferences
+import com.bankcallguard.data.BankNumberRepository
+import com.bankcallguard.domain.ScamDetectionEngine
+import com.bankcallguard.prefs.UserPreferences
 
 class BankCallGuardApp : Application() {
     lateinit var repository: BankNumberRepository

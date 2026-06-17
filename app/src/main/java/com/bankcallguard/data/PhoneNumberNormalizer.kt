@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.data
+package com.bankcallguard.data
 
 object PhoneNumberNormalizer {
     fun normalize(rawNumber: String?): String? {

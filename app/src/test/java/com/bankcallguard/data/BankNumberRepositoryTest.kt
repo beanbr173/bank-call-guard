@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.data
+package com.bankcallguard.data
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider

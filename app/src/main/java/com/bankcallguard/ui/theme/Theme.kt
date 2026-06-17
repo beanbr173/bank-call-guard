@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.ui.theme
+package com.bankcallguard.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme

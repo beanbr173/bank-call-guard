@@ -1,8 +1,8 @@
-package com.mda.bankcallguard.domain
+package com.bankcallguard.domain
 
-import com.mda.bankcallguard.data.BankEntry
-import com.mda.bankcallguard.data.BankLookup
-import com.mda.bankcallguard.data.PhoneNumberNormalizer
+import com.bankcallguard.data.BankEntry
+import com.bankcallguard.data.BankLookup
+import com.bankcallguard.data.PhoneNumberNormalizer
 
 class ScamDetectionEngine(
     private val repository: BankLookup

@@ -1,11 +1,11 @@
-package com.mda.bankcallguard
+package com.bankcallguard
 
 import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.util.Log
-import com.mda.bankcallguard.domain.Risk
-import com.mda.bankcallguard.domain.ScamDetectionEngine
+import com.bankcallguard.domain.Risk
+import com.bankcallguard.domain.ScamDetectionEngine
 
 class BankCallScreeningService : CallScreeningService() {
     override fun onScreenCall(callDetails: Call.Details) {

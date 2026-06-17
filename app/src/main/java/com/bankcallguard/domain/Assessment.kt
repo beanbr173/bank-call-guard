@@ -1,4 +1,4 @@
-package com.mda.bankcallguard.domain
+package com.bankcallguard.domain
 
 enum class Risk {
     NONE,

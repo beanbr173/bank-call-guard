@@ -1,4 +1,4 @@
-package com.mda.bankcallguard
+package com.bankcallguard
 
 import android.app.role.RoleManager
 import android.content.Intent
@@ -40,9 +40,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.mda.bankcallguard.domain.ScamDetectionEngine
-import com.mda.bankcallguard.prefs.UserPreferences
-import com.mda.bankcallguard.ui.theme.BankCallGuardTheme
+import com.bankcallguard.domain.ScamDetectionEngine
+import com.bankcallguard.prefs.UserPreferences
+import com.bankcallguard.ui.theme.BankCallGuardTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
