@@ -11,6 +11,7 @@
     <string name="auto_silence_high_risk">Auto-silence high-risk calls</string>
     <string name="use_scam_alarm_ringtone">Use alarm ringtone for scam warnings</string>
     <string name="use_scam_alarm_ringtone_hint">Replaces the normal ring with a loud alarm for high-risk scam calls.</string>
+    <string name="dark_mode">Dark mode</string>
     <string name="simulate_scam_call">Simulate scam call warning</string>
     <string name="simulate_caution_call">Simulate caution warning</string>
     <string name="dismiss_warning">Dismiss warning</string>
@@ -20,5 +21,8 @@
     <string name="battery_optimization">Battery optimization</string>
     <string name="battery_optimization_body">Some phones may delay call screening if battery optimization is enabled for this app.</string>
     <string name="request_battery_exemption">Request battery exemption</string>
+    <string name="battery_exemption_enabled">Battery exemption is already enabled</string>
+    <string name="battery_exemption_disabled">Battery exemption is not enabled</string>
+    <string name="open_battery_settings_to_revert">Open settings to revert</string>
     <string name="app_version">Version %1$s</string>
 </resources>

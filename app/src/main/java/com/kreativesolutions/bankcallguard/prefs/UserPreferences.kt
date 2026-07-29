@@ -27,6 +27,10 @@ class UserPreferences(private val context: Context) {
         prefs[KEY_USE_SCAM_ALARM_RINGTONE] ?: true
     }
 
+    val darkTheme: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_DARK_THEME] ?: false
+    }
+
     val enabledBankIds: Flow<Set<String>> = context.dataStore.data.map { prefs ->
         prefs[KEY_ENABLED_BANK_IDS] ?: DEFAULT_BANK_IDS
     }
@@ -49,6 +53,12 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    suspend fun setDarkTheme(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_DARK_THEME] = enabled
+        }
+    }
+
     suspend fun setEnabledBankIds(bankIds: Set<String>) {
         context.dataStore.edit { prefs ->
             prefs[KEY_ENABLED_BANK_IDS] = bankIds
@@ -61,6 +71,7 @@ class UserPreferences(private val context: Context) {
             alertsEnabled = prefs[KEY_ALERTS_ENABLED] ?: true,
             autoSilenceHighRisk = prefs[KEY_AUTO_SILENCE_HIGH_RISK] ?: false,
             useScamAlarmRingtone = prefs[KEY_USE_SCAM_ALARM_RINGTONE] ?: true,
+            darkTheme = prefs[KEY_DARK_THEME] ?: false,
             enabledBankIds = prefs[KEY_ENABLED_BANK_IDS] ?: DEFAULT_BANK_IDS
         )
     }
@@ -69,6 +80,7 @@ class UserPreferences(private val context: Context) {
         val alertsEnabled: Boolean,
         val autoSilenceHighRisk: Boolean,
         val useScamAlarmRingtone: Boolean,
+        val darkTheme: Boolean,
         val enabledBankIds: Set<String>
     )
 
@@ -76,6 +88,7 @@ class UserPreferences(private val context: Context) {
         private val KEY_ALERTS_ENABLED = booleanPreferencesKey("alerts_enabled")
         private val KEY_AUTO_SILENCE_HIGH_RISK = booleanPreferencesKey("auto_silence_high_risk")
         private val KEY_USE_SCAM_ALARM_RINGTONE = booleanPreferencesKey("use_scam_alarm_ringtone")
+        private val KEY_DARK_THEME = booleanPreferencesKey("dark_theme")
         private val KEY_ENABLED_BANK_IDS = stringSetPreferencesKey("enabled_bank_ids")
 
         val DEFAULT_BANK_IDS = setOf("wells_fargo", "bank_of_america", "first_citizens")
