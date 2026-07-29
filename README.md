@@ -1,6 +1,6 @@
 # Bank Call Guard
 
-Android app that screens incoming calls before they ring and warns you when a caller may be impersonating Wells Fargo, Bank of America, First Citizens Bank, or other monitored banks.
+Android app that screens incoming calls before they ring and warns you when a caller may be impersonating Wells Fargo, Bank of America, First Citizens, USAA, Chase, Citibank, U.S. Bank, Golden 1, East West Bank, or other monitored banks.
 
 ## Browser preview (no build required)
 

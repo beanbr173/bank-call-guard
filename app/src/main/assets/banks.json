@@ -53,6 +53,94 @@
         "fc direct",
         "fcdirect"
       ]
+    },
+    {
+      "bankId": "usaa",
+      "displayName": "USAA",
+      "numbers": [
+        "+18005318722",
+        "+12105318722",
+        "+12104982211"
+      ],
+      "aliases": [
+        "usaa",
+        "usaa bank",
+        "usaa federal savings bank"
+      ]
+    },
+    {
+      "bankId": "chase",
+      "displayName": "Chase",
+      "numbers": [
+        "+18009359935",
+        "+18004323117",
+        "+17132623300"
+      ],
+      "aliases": [
+        "chase",
+        "chase bank",
+        "jpmorgan chase",
+        "jp morgan chase"
+      ]
+    },
+    {
+      "bankId": "citibank",
+      "displayName": "Citibank",
+      "numbers": [
+        "+18003749700",
+        "+18009505114",
+        "+18006273999"
+      ],
+      "aliases": [
+        "citibank",
+        "citi",
+        "citi bank",
+        "citigroup"
+      ]
+    },
+    {
+      "bankId": "us_bank",
+      "displayName": "U.S. Bank",
+      "numbers": [
+        "+18008722657",
+        "+18002858585",
+        "+15034019991"
+      ],
+      "aliases": [
+        "u.s. bank",
+        "us bank",
+        "usbanks",
+        "usbank"
+      ]
+    },
+    {
+      "bankId": "golden_1",
+      "displayName": "Golden 1 Credit Union",
+      "numbers": [
+        "+18774653361",
+        "+19167322900"
+      ],
+      "aliases": [
+        "golden 1",
+        "golden1",
+        "golden 1 credit union",
+        "golden one"
+      ]
+    },
+    {
+      "bankId": "east_west_bank",
+      "displayName": "East West Bank",
+      "numbers": [
+        "+18888955650",
+        "+18008096761",
+        "+16267990228"
+      ],
+      "aliases": [
+        "east west bank",
+        "eastwest bank",
+        "east west",
+        "ewb"
+      ]
     }
   ]
 }
