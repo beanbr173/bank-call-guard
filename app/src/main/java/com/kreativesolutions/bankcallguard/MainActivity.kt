@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,10 +21,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -50,11 +53,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -117,10 +122,16 @@ private fun MainScreen() {
     var catalogBanks by remember { mutableStateOf(app.repository.getAllBanks()) }
     var refreshStatus by remember { mutableStateOf<String?>(null) }
     var refreshing by remember { mutableStateOf(false) }
+    var bankUpdateAvailable by remember {
+        mutableStateOf<BankCatalogUpdater.UpdateCheck.Available?>(null)
+    }
+    var bankUpdateBannerDismissed by remember { mutableStateOf(false) }
+    var showBankUpdateDetails by remember { mutableStateOf(false) }
     var customLabel by remember { mutableStateOf("") }
     var customNumberInput by remember { mutableStateOf("") }
     var customError by remember { mutableStateOf<String?>(null) }
     var simulateExpanded by remember { mutableStateOf(false) }
+    val enabledStatusGreen = Color(0xFF2E7D32)
 
     val enabledBanksForSimulate = remember(catalogBanks, enabledBankIds, customNumbers) {
         app.repository.getBanksForScreening(enabledBankIds, customNumbers)
@@ -176,6 +187,63 @@ private fun MainScreen() {
         }
     }
 
+    fun refreshBankCatalog() {
+        if (refreshing) return
+        refreshing = true
+        refreshStatus = null
+        scope.launch {
+            when (val result = app.bankCatalogUpdater.refresh()) {
+                is BankCatalogUpdater.Result.Success -> {
+                    app.repository.reload()
+                    catalogBanks = app.repository.getAllBanks()
+                    val now = System.currentTimeMillis()
+                    app.userPreferences.setBankCatalogLastUpdatedMs(now)
+                    refreshStatus = context.getString(
+                        R.string.bank_list_refresh_ok,
+                        result.bankCount
+                    )
+                    bankUpdateAvailable = null
+                    bankUpdateBannerDismissed = false
+                    showBankUpdateDetails = false
+                }
+                is BankCatalogUpdater.Result.Failure -> {
+                    refreshStatus = context.getString(
+                        R.string.bank_list_refresh_failed,
+                        result.message
+                    )
+                }
+            }
+            refreshing = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        when (val check = app.bankCatalogUpdater.checkForUpdate()) {
+            is BankCatalogUpdater.UpdateCheck.Available -> {
+                bankUpdateAvailable = check
+                bankUpdateBannerDismissed = false
+            }
+            else -> Unit
+        }
+    }
+
+    if (showBankUpdateDetails) {
+        val update = bankUpdateAvailable
+        if (update != null) {
+            BankUpdateDetailsDialog(
+                update = update,
+                refreshing = refreshing,
+                onDismiss = { showBankUpdateDetails = false },
+                onUpdateNow = {
+                    showBankUpdateDetails = false
+                    refreshBankCatalog()
+                }
+            )
+        } else {
+            showBankUpdateDetails = false
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -194,6 +262,58 @@ private fun MainScreen() {
             style = MaterialTheme.typography.bodyMedium
         )
 
+        val pendingBankUpdate = bankUpdateAvailable
+        if (pendingBankUpdate != null && !bankUpdateBannerDismissed) {
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.bank_list_update_available_title),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    val localLabel = pendingBankUpdate.localVersion
+                        ?: stringResource(R.string.bank_list_version_unknown)
+                    val remoteLabel = pendingBankUpdate.remoteVersion
+                        ?: stringResource(R.string.bank_list_version_unknown)
+                    Text(
+                        text = if (
+                            pendingBankUpdate.localVersion != null ||
+                            pendingBankUpdate.remoteVersion != null
+                        ) {
+                            stringResource(
+                                R.string.bank_list_update_available_body,
+                                localLabel,
+                                remoteLabel
+                            )
+                        } else {
+                            stringResource(R.string.bank_list_update_available_body_unknown)
+                        },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { refreshBankCatalog() },
+                            enabled = !refreshing,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.bank_list_update_now))
+                        }
+                        OutlinedButton(
+                            onClick = { bankUpdateBannerDismissed = true },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.bank_list_update_later))
+                        }
+                    }
+                }
+            }
+        }
+
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
@@ -208,16 +328,25 @@ private fun MainScreen() {
                         stringResource(R.string.call_screening_disabled)
                     },
                     color = if (callScreeningEnabled) {
-                        MaterialTheme.colorScheme.secondary
+                        enabledStatusGreen
                     } else {
                         MaterialTheme.colorScheme.error
                     }
                 )
-                Button(
-                    onClick = { requestCallScreeningRole(context, roleLauncher) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.enable_call_screening))
+                if (callScreeningEnabled) {
+                    OutlinedButton(
+                        onClick = { openCallScreeningSettingsToRevert(context) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.open_call_screening_settings_to_revert))
+                    }
+                } else {
+                    Button(
+                        onClick = { requestCallScreeningRole(context, roleLauncher) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.enable_call_screening))
+                    }
                 }
             }
         }
@@ -424,6 +553,18 @@ private fun MainScreen() {
                     },
                     style = MaterialTheme.typography.bodySmall
                 )
+                if (bankUpdateAvailable != null && bankUpdateBannerDismissed) {
+                    Text(
+                        text = stringResource(R.string.bank_list_update_available_link),
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showBankUpdateDetails = true }
+                            .padding(vertical = 4.dp)
+                    )
+                }
                 if (refreshStatus != null) {
                     Text(
                         text = refreshStatus!!,
@@ -431,32 +572,7 @@ private fun MainScreen() {
                     )
                 }
                 OutlinedButton(
-                    onClick = {
-                        if (refreshing) return@OutlinedButton
-                        refreshing = true
-                        refreshStatus = null
-                        scope.launch {
-                            when (val result = app.bankCatalogUpdater.refresh()) {
-                                is BankCatalogUpdater.Result.Success -> {
-                                    app.repository.reload()
-                                    catalogBanks = app.repository.getAllBanks()
-                                    val now = System.currentTimeMillis()
-                                    app.userPreferences.setBankCatalogLastUpdatedMs(now)
-                                    refreshStatus = context.getString(
-                                        R.string.bank_list_refresh_ok,
-                                        result.bankCount
-                                    )
-                                }
-                                is BankCatalogUpdater.Result.Failure -> {
-                                    refreshStatus = context.getString(
-                                        R.string.bank_list_refresh_failed,
-                                        result.message
-                                    )
-                                }
-                            }
-                            refreshing = false
-                        }
-                    },
+                    onClick = { refreshBankCatalog() },
                     enabled = !refreshing,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -504,7 +620,7 @@ private fun MainScreen() {
                         stringResource(R.string.battery_exemption_disabled)
                     },
                     color = if (batteryExemptionEnabled) {
-                        MaterialTheme.colorScheme.secondary
+                        enabledStatusGreen
                     } else {
                         MaterialTheme.colorScheme.error
                     }
@@ -635,6 +751,119 @@ private fun MainScreen() {
 }
 
 @Composable
+private fun BankUpdateDetailsDialog(
+    update: BankCatalogUpdater.UpdateCheck.Available,
+    refreshing: Boolean,
+    onDismiss: () -> Unit,
+    onUpdateNow: () -> Unit
+) {
+    val diff = update.diff
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.bank_list_update_details_title)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val localLabel = update.localVersion
+                    ?: stringResource(R.string.bank_list_version_unknown)
+                val remoteLabel = update.remoteVersion
+                    ?: stringResource(R.string.bank_list_version_unknown)
+                Text(
+                    text = stringResource(
+                        R.string.bank_list_update_available_body,
+                        localLabel,
+                        remoteLabel
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (!diff.hasChanges) {
+                    Text(
+                        text = stringResource(R.string.bank_list_update_no_structural_changes),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    if (diff.addedBanks.isNotEmpty()) {
+                        DiffSection(title = stringResource(R.string.bank_list_update_added_banks)) {
+                            diff.addedBanks.forEach { bank ->
+                                Text("• ${bank.displayName}")
+                                bank.numbers.sorted().forEach { number ->
+                                    Text(
+                                        text = "    $number",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (diff.removedBanks.isNotEmpty()) {
+                        DiffSection(title = stringResource(R.string.bank_list_update_removed_banks)) {
+                            diff.removedBanks.forEach { bank ->
+                                Text("• ${bank.displayName}")
+                            }
+                        }
+                    }
+                    if (diff.banksWithAddedNumbers.isNotEmpty()) {
+                        DiffSection(title = stringResource(R.string.bank_list_update_added_numbers)) {
+                            diff.banksWithAddedNumbers.forEach { change ->
+                                Text("• ${change.bankName}")
+                                change.numbers.forEach { number ->
+                                    Text(
+                                        text = "    + $number",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (diff.banksWithRemovedNumbers.isNotEmpty()) {
+                        DiffSection(title = stringResource(R.string.bank_list_update_removed_numbers)) {
+                            diff.banksWithRemovedNumbers.forEach { change ->
+                                Text("• ${change.bankName}")
+                                change.numbers.forEach { number ->
+                                    Text(
+                                        text = "    − $number",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onUpdateNow, enabled = !refreshing) {
+                Text(stringResource(R.string.bank_list_update_now))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.bank_list_update_close))
+            }
+        }
+    )
+}
+
+@Composable
+private fun DiffSection(
+    title: String,
+    content: @Composable () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(text = title, fontWeight = FontWeight.SemiBold)
+        content()
+    }
+}
+
+@Composable
 private fun HighBlockModeOption(
     label: String,
     selected: Boolean,
@@ -731,6 +960,18 @@ private fun requestCallScreeningRole(
     if (roleManager.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING)) {
         val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
         launcher.launch(intent)
+    }
+}
+
+private fun openCallScreeningSettingsToRevert(context: android.content.Context) {
+    try {
+        context.startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+    } catch (_: Exception) {
+        context.startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+            }
+        )
     }
 }
 
