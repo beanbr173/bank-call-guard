@@ -65,7 +65,6 @@ object AlertNotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_CALL)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
-            .setFullScreenIntent(pendingIntent, true)
             .build()
 
         val notificationId = NOTIFICATION_ID_BASE + (assessment.callerNumber?.hashCode()?.and(0xFF) ?: 0)
