@@ -3,7 +3,6 @@ package com.kreativesolutions.bankcallguard
 import android.content.Context
 import android.content.Intent
 import com.kreativesolutions.bankcallguard.domain.Assessment
-import com.kreativesolutions.bankcallguard.domain.Risk
 
 object OverlayLauncher {
     const val EXTRA_BANK_NAME = "extra_bank_name"
@@ -13,8 +12,8 @@ object OverlayLauncher {
     const val EXTRA_RISK = "extra_risk"
     const val EXTRA_PLAY_ALARM = "extra_play_alarm"
 
-    fun show(context: Context, assessment: Assessment, playAlarm: Boolean = false) {
-        val intent = Intent(context, IncomingCallOverlayActivity::class.java).apply {
+    fun createIntent(context: Context, assessment: Assessment, playAlarm: Boolean = false): Intent {
+        return Intent(context, IncomingCallOverlayActivity::class.java).apply {
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -27,7 +26,10 @@ object OverlayLauncher {
             putExtra(EXTRA_RISK, assessment.risk.name)
             putExtra(EXTRA_PLAY_ALARM, playAlarm)
         }
-        context.startActivity(intent)
+    }
+
+    fun show(context: Context, assessment: Assessment, playAlarm: Boolean = false) {
+        context.startActivity(createIntent(context, assessment, playAlarm))
     }
 
     fun showSimulated(context: Context, assessment: Assessment, playAlarm: Boolean = false) {

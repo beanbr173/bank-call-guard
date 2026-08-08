@@ -4,8 +4,11 @@ import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.util.Log
+import com.kreativesolutions.bankcallguard.alert.AlertNotificationHelper
 import com.kreativesolutions.bankcallguard.domain.Risk
 import com.kreativesolutions.bankcallguard.domain.ScamDetectionEngine
+import com.kreativesolutions.bankcallguard.history.AlertHistoryStore
+import com.kreativesolutions.bankcallguard.prefs.HighBlockMode
 
 class BankCallScreeningService : CallScreeningService() {
     override fun onScreenCall(callDetails: Call.Details) {
@@ -40,16 +43,49 @@ class BankCallScreeningService : CallScreeningService() {
             rawNumber = phoneNumber,
             callerDisplayName = displayName,
             verificationStatus = verificationStatus,
-            enabledBankIds = prefs.enabledBankIds
+            enabledBankIds = prefs.enabledBankIds,
+            customNumbers = prefs.customNumbers
         )
 
         if (assessment.risk == Risk.HIGH || assessment.risk == Risk.CAUTION) {
             val playAlarm = assessment.risk == Risk.HIGH && prefs.useScamAlarmRingtone
-            if (playAlarm || (prefs.autoSilenceHighRisk && assessment.risk == Risk.HIGH)) {
-                responseBuilder.setSilenceCall(true)
+            var actionTaken = "alerted"
+
+            if (assessment.risk == Risk.HIGH) {
+                when (prefs.highBlockMode) {
+                    HighBlockMode.OFF -> Unit
+                    HighBlockMode.SILENCE -> {
+                        responseBuilder.setSilenceCall(true)
+                        actionTaken = "silenced"
+                    }
+                    HighBlockMode.REJECT -> {
+                        responseBuilder.setDisallowCall(true)
+                        responseBuilder.setRejectCall(true)
+                        responseBuilder.setSkipNotification(true)
+                        actionTaken = "rejected"
+                    }
+                }
             }
+
+            if (playAlarm && prefs.highBlockMode != HighBlockMode.REJECT) {
+                responseBuilder.setSilenceCall(true)
+            } else if (playAlarm && prefs.highBlockMode == HighBlockMode.REJECT) {
+                // Reject already blocks the call; alarm still helps via overlay/notification.
+            }
+
             OverlayLauncher.show(applicationContext, assessment, playAlarm = playAlarm)
-            Log.i(TAG, "Alert shown: ${assessment.userMessage} for $phoneNumber")
+            AlertNotificationHelper.notifyAlert(applicationContext, assessment, playAlarm)
+            app.alertHistoryStore.addBlocking(
+                AlertHistoryStore.create(
+                    risk = assessment.risk,
+                    bankName = assessment.bankName,
+                    callerNumber = assessment.callerNumber,
+                    callerDisplayName = assessment.callerDisplayName,
+                    message = assessment.userMessage,
+                    actionTaken = actionTaken
+                )
+            )
+            Log.i(TAG, "Alert shown ($actionTaken): ${assessment.userMessage} for $phoneNumber")
         }
 
         respondToCall(callDetails, responseBuilder.build())

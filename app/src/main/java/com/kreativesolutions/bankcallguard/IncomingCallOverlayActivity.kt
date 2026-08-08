@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
@@ -63,7 +62,7 @@ class IncomingCallOverlayActivity : ComponentActivity() {
                         ScamAlertSoundPlayer.stop()
                         finish()
                     },
-                    onAnswerAnyway = {
+                    onClose = {
                         ScamAlertSoundPlayer.stop()
                         finish()
                     }
@@ -86,7 +85,7 @@ private fun IncomingCallOverlayScreen(
     callerDisplayName: String?,
     risk: Risk,
     onDismiss: () -> Unit,
-    onAnswerAnyway: () -> Unit
+    onClose: () -> Unit
 ) {
     val accentColor = when (risk) {
         Risk.HIGH -> Color(0xFFD32F2F)
@@ -163,13 +162,13 @@ private fun IncomingCallOverlayScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onAnswerAnyway,
+            onClick = onDismiss,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = accentColor)
         ) {
-            Icon(Icons.Default.Call, contentDescription = null)
+            Icon(Icons.Default.Close, contentDescription = null)
             Text(
-                text = stringResource(R.string.answer_anyway),
+                text = stringResource(R.string.dismiss_warning),
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -177,13 +176,11 @@ private fun IncomingCallOverlayScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = onDismiss,
+            onClick = onClose,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(Icons.Default.Close, contentDescription = null, tint = Color.White)
             Text(
-                text = stringResource(R.string.dismiss_warning),
-                modifier = Modifier.padding(start = 8.dp),
+                text = stringResource(R.string.close_overlay_still_ringing),
                 color = Color.White
             )
         }

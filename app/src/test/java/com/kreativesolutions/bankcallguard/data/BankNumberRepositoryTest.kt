@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -18,10 +20,11 @@ class BankNumberRepositoryTest {
     @Test
     fun loadsConfiguredBanks() {
         val banks = repository.getAllBanks()
-        assertEquals(3, banks.size)
+        assertEquals(9, banks.size)
         assertNotNull(banks.firstOrNull { it.bankId == "wells_fargo" })
         assertNotNull(banks.firstOrNull { it.bankId == "bank_of_america" })
         assertNotNull(banks.firstOrNull { it.bankId == "first_citizens" })
+        assertNotNull(banks.firstOrNull { it.bankId == "east_west_bank" })
     }
 
     @Test
@@ -46,5 +49,33 @@ class BankNumberRepositoryTest {
 
         val byAlias = repository.findBankByAlias("First Citizens Fraud Alert", banks)
         assertEquals("first_citizens", byAlias?.bankId)
+    }
+
+    @Test
+    fun emptyEnabledSetReturnsNoBanks() {
+        val enabled = repository.getEnabledBanks(emptySet())
+        assertTrue(enabled.isEmpty())
+    }
+
+    @Test
+    fun shortAliasDoesNotMatchPartialWords() {
+        val banks = repository.getAllBanks()
+        // "wf" removed from catalog; should not match random names containing wf as substring
+        assertNull(repository.findBankByAlias("Software Inc", banks))
+        assertNull(repository.findBankByAlias("Boa Constrictor Rescue", banks))
+    }
+
+    @Test
+    fun tokenAliasRequiresWholeToken() {
+        val banks = listOf(
+            BankEntry(
+                bankId = "chase",
+                displayName = "Chase",
+                numbers = emptySet(),
+                aliases = setOf("chase")
+            )
+        )
+        assertNotNull(repository.findBankByAlias("Chase Bank Alert", banks))
+        assertNull(repository.findBankByAlias("Purchase confirmation", banks))
     }
 }

@@ -79,7 +79,9 @@ In GitHub: **Actions → Build APK → Run workflow** to rebuild without pushing
 - Uses carrier **STIR/SHAKEN** verification when available
 - Shows a full-screen warning such as **"Scam posing as Wells Fargo"** for high-risk calls
 - Plays a **custom alarm ringtone** (instead of the normal ring) for high-risk scam warnings
-- Lets you dismiss the warning or answer anyway
+- Optional **silence or reject** for high-risk calls; alert history and notification fallback
+- Custom numbers, manual bank-list refresh, and per-bank simulate warnings
+- Lets you dismiss the warning overlay (the phone may still be ringing unless you chose reject)
 
 ## Important limitations
 
@@ -146,7 +148,8 @@ gradlew.bat assembleRelease
 | Condition | Risk | Message |
 |-----------|------|---------|
 | Known bank number + STIR/SHAKEN failed | High | Scam posing as [Bank] |
-| Caller ID name matches bank but number is not official | High | Possible scam — caller ID says [Bank] but number is not official |
+| Caller ID name matches bank but number is not official (unverified/failed) | High | Possible scam — caller ID says [Bank] but number is not official |
+| Caller ID name matches bank but number is not official (STIR passed) | Caution | Unverified name match — number is not official |
 | Known bank number + verification unavailable | Caution | Unverified caller claiming to be [Bank] |
 | Known bank number + verification passed | None | No overlay |
 | Other calls | None | Pass through |
@@ -186,7 +189,7 @@ Edit `app/src/main/assets/banks.json` and rebuild. Each bank entry includes:
 
 ## Version
 
-1.0.3
+1.1.0
 
 ## Play Store track
 

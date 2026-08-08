@@ -2,7 +2,9 @@ package com.kreativesolutions.bankcallguard.domain
 
 import com.kreativesolutions.bankcallguard.data.BankEntry
 import com.kreativesolutions.bankcallguard.data.BankLookup
+import com.kreativesolutions.bankcallguard.data.BankNumberRepository
 import com.kreativesolutions.bankcallguard.data.PhoneNumberNormalizer
+import com.kreativesolutions.bankcallguard.prefs.CustomNumber
 
 class ScamDetectionEngine(
     private val repository: BankLookup
@@ -11,10 +13,17 @@ class ScamDetectionEngine(
         rawNumber: String?,
         callerDisplayName: String?,
         verificationStatus: Int,
-        enabledBankIds: Set<String> = emptySet()
+        enabledBankIds: Set<String> = emptySet(),
+        customNumbers: List<CustomNumber> = emptyList()
     ): Assessment {
         val normalizedNumber = PhoneNumberNormalizer.normalize(rawNumber)
-        val enabledBanks = repository.getEnabledBanks(enabledBankIds)
+        val enabledBanks = if (repository is BankNumberRepository) {
+            repository.getBanksForScreening(enabledBankIds, customNumbers)
+        } else {
+            val base = repository.getEnabledBanks(enabledBankIds).toMutableList()
+            base.addAll(BankNumberRepository.customNumbersToBankEntries(customNumbers))
+            base
+        }
         val matchedBank = repository.findBankByNumber(normalizedNumber, enabledBanks)
         val aliasMatch = repository.findBankByAlias(callerDisplayName, enabledBanks)
 
@@ -28,13 +37,11 @@ class ScamDetectionEngine(
         }
 
         if (aliasMatch != null) {
-            return Assessment(
-                bankId = aliasMatch.bankId,
-                bankName = aliasMatch.displayName,
-                risk = Risk.HIGH,
-                userMessage = "Possible scam — caller ID says ${aliasMatch.displayName} but number is not official",
-                callerNumber = normalizedNumber,
-                callerDisplayName = callerDisplayName
+            return assessAliasMatch(
+                bank = aliasMatch,
+                normalizedNumber = normalizedNumber,
+                callerDisplayName = callerDisplayName,
+                verificationStatus = verificationStatus
             )
         }
 
@@ -65,6 +72,33 @@ class ScamDetectionEngine(
             Risk.HIGH -> "Scam posing as ${bank.displayName}"
             Risk.CAUTION -> "Unverified caller claiming to be ${bank.displayName}"
             Risk.NONE -> null
+        }
+
+        return Assessment(
+            bankId = bank.bankId,
+            bankName = bank.displayName,
+            risk = risk,
+            userMessage = message,
+            callerNumber = normalizedNumber,
+            callerDisplayName = callerDisplayName
+        )
+    }
+
+    private fun assessAliasMatch(
+        bank: BankEntry,
+        normalizedNumber: String?,
+        callerDisplayName: String?,
+        verificationStatus: Int
+    ): Assessment {
+        val risk = when (verificationStatus) {
+            VERIFICATION_STATUS_PASSED -> Risk.CAUTION
+            else -> Risk.HIGH
+        }
+        val message = when (risk) {
+            Risk.CAUTION ->
+                "Unverified name match — caller ID says ${bank.displayName} but number is not official"
+            else ->
+                "Possible scam — caller ID says ${bank.displayName} but number is not official"
         }
 
         return Assessment(

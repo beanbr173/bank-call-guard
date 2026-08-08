@@ -2,6 +2,8 @@ package com.kreativesolutions.bankcallguard.domain
 
 import com.kreativesolutions.bankcallguard.data.BankEntry
 import com.kreativesolutions.bankcallguard.data.BankLookup
+import com.kreativesolutions.bankcallguard.data.BankNumberRepository
+import com.kreativesolutions.bankcallguard.prefs.CustomNumber
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -34,7 +36,8 @@ class ScamDetectionEngineTest {
         val assessment = engine.assess(
             rawNumber = "800-869-3557",
             callerDisplayName = "Wells Fargo",
-            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_FAILED
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_FAILED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
         )
 
         assertEquals(Risk.HIGH, assessment.risk)
@@ -47,7 +50,8 @@ class ScamDetectionEngineTest {
         val assessment = engine.assess(
             rawNumber = "+18004321000",
             callerDisplayName = null,
-            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
         )
 
         assertEquals(Risk.CAUTION, assessment.risk)
@@ -59,7 +63,8 @@ class ScamDetectionEngineTest {
         val assessment = engine.assess(
             rawNumber = "+18008693557",
             callerDisplayName = "Wells Fargo",
-            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_PASSED
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_PASSED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
         )
 
         assertEquals(Risk.NONE, assessment.risk)
@@ -71,7 +76,8 @@ class ScamDetectionEngineTest {
         val assessment = engine.assess(
             rawNumber = "+15551234567",
             callerDisplayName = "Bank of America Fraud",
-            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
         )
 
         assertEquals(Risk.HIGH, assessment.risk)
@@ -82,11 +88,24 @@ class ScamDetectionEngineTest {
     }
 
     @Test
+    fun aliasMatchWithPassedVerificationIsCaution() {
+        val assessment = engine.assess(
+            rawNumber = "+15551234567",
+            callerDisplayName = "Bank of America Fraud",
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_PASSED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
+        )
+
+        assertEquals(Risk.CAUTION, assessment.risk)
+    }
+
+    @Test
     fun unrelatedCallIsNone() {
         val assessment = engine.assess(
             rawNumber = "+15559876543",
             callerDisplayName = "Mom",
-            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_NOT_VERIFIED,
+            enabledBankIds = setOf("wells_fargo", "bank_of_america")
         )
 
         assertEquals(Risk.NONE, assessment.risk)
@@ -105,12 +124,40 @@ class ScamDetectionEngineTest {
         assertEquals(Risk.NONE, assessment.risk)
     }
 
+    @Test
+    fun emptyEnabledBankIdsMeansNone() {
+        val assessment = engine.assess(
+            rawNumber = "+18008693557",
+            callerDisplayName = "Wells Fargo",
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_FAILED,
+            enabledBankIds = emptySet()
+        )
+
+        assertEquals(Risk.NONE, assessment.risk)
+    }
+
+    @Test
+    fun customNumberIsMatched() {
+        val assessment = engine.assess(
+            rawNumber = "+15550001111",
+            callerDisplayName = null,
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_FAILED,
+            enabledBankIds = emptySet(),
+            customNumbers = listOf(
+                CustomNumber(id = "1", label = "My CU", e164 = "+15550001111")
+            )
+        )
+
+        assertEquals(Risk.HIGH, assessment.risk)
+        assertEquals("My CU", assessment.bankName)
+    }
+
     private class FakeBankLookup(
         private val banks: List<BankEntry>
     ) : BankLookup {
         override fun getEnabledBanks(enabledBankIds: Set<String>): List<BankEntry> {
             if (enabledBankIds.isEmpty()) {
-                return banks
+                return emptyList()
             }
             return banks.filter { it.bankId in enabledBankIds }
         }
@@ -126,10 +173,11 @@ class ScamDetectionEngineTest {
             if (displayName.isNullOrBlank()) {
                 return null
             }
-            val normalizedName = displayName.lowercase().replace(Regex("[^a-z0-9\\s]"), " ").trim()
+            val normalizedName = BankNumberRepository.normalizeAliasText(displayName)
+            val tokens = normalizedName.split(Regex("\\s+")).filter { it.isNotBlank() }.toSet()
             return banks.firstOrNull { bank ->
                 bank.aliases.any { alias ->
-                    normalizedName.contains(alias) || alias.contains(normalizedName)
+                    BankNumberRepository.matchesAlias(normalizedName, tokens, alias)
                 }
             }
         }
