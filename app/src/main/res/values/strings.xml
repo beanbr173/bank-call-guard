@@ -71,4 +71,11 @@
     <string name="app_version">Version %1$s</string>
     <string name="privacy_policy">Privacy policy</string>
     <string name="privacy_policy_url">https://beanbr173.github.io/privacy-policies/bank-call-guard.html</string>
+    <string name="nav_open_menu">Open page list</string>
+    <string name="nav_pages">Pages</string>
+    <string name="nav_call_screening">Call screening</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_about">About</string>
+    <string name="nav_page_indicator">%1$d of %2$d</string>
+    <string name="simulate_enable_bank_hint">Enable at least one bank or add a custom number to simulate.</string>
 </resources>
