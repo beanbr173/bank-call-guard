@@ -28,8 +28,14 @@
     <string name="enable_all_banks">Enable all</string>
     <string name="disable_all_banks">Disable all</string>
     <string name="custom_numbers_title">Custom numbers</string>
-    <string name="custom_numbers_body">Add official numbers for banks or credit unions not in the catalog. Matching is by number only.</string>
-    <string name="custom_number_label_hint">Label (e.g. My credit union)</string>
+    <string name="custom_numbers_body">Numbers on this list always trigger a high-risk warning and the alarm ringtone (if enabled), even when the call is carrier-verified. Matching is by number only. If the number is saved in Contacts, grant Contacts access so Android will screen the call.</string>
+    <string name="custom_number_label_hint">Label (e.g. Brian)</string>
+    <string name="contacts_access_title">Screen calls from contacts</string>
+    <string name="contacts_access_body">Android skips call screening for numbers saved in Contacts unless this permission is granted. Bank Call Guard does not read or upload your contacts list; it only needs this so it can warn on those calls.</string>
+    <string name="contacts_access_enabled">Contacts access is enabled</string>
+    <string name="contacts_access_disabled">Contacts access is not enabled</string>
+    <string name="enable_contacts_access">Allow contacts access</string>
+    <string name="open_app_settings_for_contacts">Open app settings</string>
     <string name="custom_number_value_hint">Phone number</string>
     <string name="add_custom_number">Add number</string>
     <string name="remove_custom_number">Remove</string>

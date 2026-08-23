@@ -150,6 +150,24 @@ class ScamDetectionEngineTest {
 
         assertEquals(Risk.HIGH, assessment.risk)
         assertEquals("My CU", assessment.bankName)
+        assertEquals("Watch-list number: My CU", assessment.userMessage)
+    }
+
+    @Test
+    fun customNumberIsHighRiskEvenWhenVerificationPassed() {
+        val assessment = engine.assess(
+            rawNumber = "555-000-1111",
+            callerDisplayName = "Brian",
+            verificationStatus = ScamDetectionEngine.VERIFICATION_STATUS_PASSED,
+            enabledBankIds = emptySet(),
+            customNumbers = listOf(
+                CustomNumber(id = "1", label = "Brian", e164 = "+15550001111")
+            )
+        )
+
+        assertEquals(Risk.HIGH, assessment.risk)
+        assertEquals("Watch-list number: Brian", assessment.userMessage)
+        assertEquals("custom_1", assessment.bankId)
     }
 
     private class FakeBankLookup(

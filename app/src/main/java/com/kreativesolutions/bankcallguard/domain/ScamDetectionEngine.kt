@@ -17,6 +17,15 @@ class ScamDetectionEngine(
         customNumbers: List<CustomNumber> = emptyList()
     ): Assessment {
         val normalizedNumber = PhoneNumberNormalizer.normalize(rawNumber)
+        val matchedCustom = findCustomNumber(normalizedNumber, customNumbers)
+        if (matchedCustom != null) {
+            return assessCustomNumber(
+                custom = matchedCustom,
+                normalizedNumber = normalizedNumber,
+                callerDisplayName = callerDisplayName
+            )
+        }
+
         val enabledBanks = if (repository is BankNumberRepository) {
             repository.getBanksForScreening(enabledBankIds, customNumbers)
         } else {
@@ -50,6 +59,33 @@ class ScamDetectionEngine(
             bankName = null,
             risk = Risk.NONE,
             userMessage = null,
+            callerNumber = normalizedNumber,
+            callerDisplayName = callerDisplayName
+        )
+    }
+
+    private fun findCustomNumber(
+        normalizedNumber: String?,
+        customNumbers: List<CustomNumber>
+    ): CustomNumber? {
+        if (normalizedNumber.isNullOrBlank()) {
+            return null
+        }
+        return customNumbers.firstOrNull { custom ->
+            PhoneNumberNormalizer.normalize(custom.e164) == normalizedNumber
+        }
+    }
+
+    private fun assessCustomNumber(
+        custom: CustomNumber,
+        normalizedNumber: String?,
+        callerDisplayName: String?
+    ): Assessment {
+        return Assessment(
+            bankId = "custom_${custom.id}",
+            bankName = custom.label,
+            risk = Risk.HIGH,
+            userMessage = "Watch-list number: ${custom.label}",
             callerNumber = normalizedNumber,
             callerDisplayName = callerDisplayName
         )

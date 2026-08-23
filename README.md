@@ -80,7 +80,9 @@ In GitHub: **Actions → Build APK → Run workflow** to rebuild without pushing
 - Shows a full-screen warning such as **"Scam posing as Wells Fargo"** for high-risk calls
 - Plays a **custom alarm ringtone** (instead of the normal ring) for high-risk scam warnings
 - Optional **silence or reject** for high-risk calls; alert history and notification fallback
-- Custom numbers, manual bank-list refresh, and per-bank simulate warnings
+- Custom numbers always trigger a high-risk watch-list alert (even when carrier-verified)
+- Optional **Contacts** permission so Android will screen calls from saved contacts
+- Manual bank-list refresh and per-bank simulate warnings
 - Lets you dismiss the warning overlay (the phone may still be ringing unless you chose reject)
 
 ## Important limitations
@@ -131,8 +133,9 @@ gradlew.bat assembleRelease
 3. Install the APK
 4. Open **Bank Call Guard**
 5. Tap **Enable call screening** and accept the system role prompt
-6. Optionally request battery optimization exemption on aggressive OEM skins
-7. Use **Simulate scam call warning** to preview the overlay without a real call
+6. Tap **Allow contacts access** so calls from saved contacts are still screened
+7. Optionally request battery optimization exemption on aggressive OEM skins
+8. Use **Simulate scam call warning** to preview the overlay without a real call
 
 ### If install says "App not installed"
 
@@ -147,6 +150,7 @@ gradlew.bat assembleRelease
 
 | Condition | Risk | Message |
 |-----------|------|---------|
+| Custom watch-list number (any verification status) | High | Watch-list number: [label] |
 | Known bank number + STIR/SHAKEN failed | High | Scam posing as [Bank] |
 | Caller ID name matches bank but number is not official (unverified/failed) | High | Possible scam — caller ID says [Bank] but number is not official |
 | Caller ID name matches bank but number is not official (STIR passed) | Caution | Unverified name match — number is not official |

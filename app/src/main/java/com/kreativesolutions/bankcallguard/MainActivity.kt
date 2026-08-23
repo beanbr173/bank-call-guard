@@ -118,6 +118,7 @@ private fun MainScreen() {
     val alertHistory by app.alertHistoryStore.entries.collectAsState(initial = emptyList())
 
     var callScreeningEnabled by remember { mutableStateOf(isCallScreeningRoleHeld(context)) }
+    var contactsAccessEnabled by remember { mutableStateOf(isReadContactsGranted(context)) }
     var batteryExemptionEnabled by remember { mutableStateOf(isBatteryExemptionGranted(context)) }
     var catalogBanks by remember { mutableStateOf(app.repository.getAllBanks()) }
     var refreshStatus by remember { mutableStateOf<String?>(null) }
@@ -157,6 +158,7 @@ private fun MainScreen() {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 callScreeningEnabled = isCallScreeningRoleHeld(context)
+                contactsAccessEnabled = isReadContactsGranted(context)
                 batteryExemptionEnabled = isBatteryExemptionGranted(context)
             }
         }
@@ -164,10 +166,19 @@ private fun MainScreen() {
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    val contactsPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        contactsAccessEnabled = granted
+    }
+
     val roleLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) {
         callScreeningEnabled = isCallScreeningRoleHeld(context)
+        if (isCallScreeningRoleHeld(context) && !isReadContactsGranted(context)) {
+            contactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+        }
     }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -346,6 +357,51 @@ private fun MainScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(R.string.enable_call_screening))
+                    }
+                }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.contacts_access_title),
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(text = stringResource(R.string.contacts_access_body))
+                Text(
+                    text = if (contactsAccessEnabled) {
+                        stringResource(R.string.contacts_access_enabled)
+                    } else {
+                        stringResource(R.string.contacts_access_disabled)
+                    },
+                    color = if (contactsAccessEnabled) {
+                        enabledStatusGreen
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    }
+                )
+                if (contactsAccessEnabled) {
+                    OutlinedButton(
+                        onClick = { openAppSettings(context) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.open_app_settings_for_contacts))
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            contactsPermissionLauncher.launch(Manifest.permission.READ_CONTACTS)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.enable_contacts_access))
+                    }
+                    OutlinedButton(
+                        onClick = { openAppSettings(context) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.open_app_settings_for_contacts))
                     }
                 }
             }
@@ -939,6 +995,21 @@ private fun BankToggleRow(
         Text(text = bankName, modifier = Modifier.weight(1f))
         Checkbox(checked = checked, onCheckedChange = onCheckedChange)
     }
+}
+
+private fun isReadContactsGranted(context: android.content.Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.READ_CONTACTS
+    ) == PackageManager.PERMISSION_GRANTED
+}
+
+private fun openAppSettings(context: android.content.Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+        }
+    )
 }
 
 private fun isCallScreeningRoleHeld(context: android.content.Context): Boolean {
